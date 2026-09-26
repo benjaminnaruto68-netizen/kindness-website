@@ -1,0 +1,624 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+
+  <title>Kindness Dashboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #6b7280;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, #e0e7ff, transparent 35%),
+        var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* LOGIN */
+
+    .login-screen {
+      min-height: calc(100vh - 48px);
+      display: grid;
+      place-items: center;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 430px;
+      background: var(--card);
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0,0,0,.08);
+      text-align: center;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    h1, h2, p {
+      margin-top: 0;
+    }
+
+    .login-card h1 {
+      margin-bottom: 8px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      font-size: 16px;
+      transition: .2s;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .primary-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 12px;
+      color: white;
+      background: var(--primary);
+      font-size: 15px;
+    }
+
+    .primary-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .error {
+      color: var(--danger);
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    /* DASHBOARD */
+
+    .dashboard {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .brand h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .logout-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .logout-btn:hover {
+      background: #f9fafb;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      padding: 32px;
+      border-radius: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 15px 40px rgba(99,102,241,.22);
+    }
+
+    .hero h2 {
+      margin-bottom: 8px;
+      font-size: 27px;
+    }
+
+    .hero p {
+      margin-bottom: 0;
+      opacity: .9;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.04);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .links {
+      display: grid;
+      gap: 12px;
+      max-height: 430px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 17px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fafafa;
+      transition: .2s;
+    }
+
+    .link-card:hover {
+      transform: translateY(-2px);
+      border-color: #c7d2fe;
+      box-shadow: 0 8px 20px rgba(0,0,0,.05);
+    }
+
+    .link-info {
+      min-width: 0;
+    }
+
+    .link-title {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .link-url {
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .launch {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      border-radius: 10px;
+      color: white;
+      background: var(--primary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .launch:hover {
+      background: var(--primary-dark);
+    }
+
+    /* ADMIN */
+
+    .admin {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .admin h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .admin-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .admin-row input {
+      flex: 1;
+    }
+
+    .add-btn {
+      padding: 0 18px;
+      border-radius: 12px;
+      background: #111827;
+      color: white;
+    }
+
+    .add-btn:hover {
+      background: #374151;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 14px;
+      }
+
+      .login-card {
+        padding: 28px 20px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .hero {
+        padding: 24px;
+      }
+
+      .link-card {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .launch {
+        width: 100%;
+        text-align: center;
+      }
+
+      .admin-row {
+        flex-direction: column;
+      }
+
+      .add-btn {
+        padding: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+
+      <div class="logo">K</div>
+
+      <h1>Kindness</h1>
+
+      <p class="subtitle">
+        Welcome to your personal link dashboard.
+      </p>
+
+      <input
+        id="accessInput"
+        type="password"
+        placeholder="Enter access code"
+        autocomplete="off"
+      >
+
+      <button class="primary-btn" onclick="login()">
+        Enter Dashboard
+      </button>
+
+      <div id="loginError" class="error hidden">
+        Incorrect access code.
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- DASHBOARD -->
+  <main id="dashboard" class="dashboard hidden">
+
+    <header class="topbar">
+
+      <div class="brand">
+        <div class="brand-icon">K</div>
+
+        <div>
+          <h1>Kindness</h1>
+          <span>Link Dashboard</span>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">
+        Log out
+      </button>
+
+    </header>
+
+
+    <section class="hero">
+      <h2>Welcome back 👋</h2>
+      <p>
+        Open your saved resources from one simple dashboard.
+      </p>
+    </section>
+
+
+    <section class="panel">
+
+      <div class="panel-header">
+        <h2>Saved Links</h2>
+        <span id="linkCount" class="count">0 links</span>
+      </div>
+
+      <div id="links" class="links"></div>
+
+
+      <!-- OWNER CONTROLS -->
+      <div id="adminPanel" class="admin hidden">
+
+        <h3>Dashboard Controls</h3>
+
+        <div class="admin-row">
+
+          <input
+            id="urlInput"
+            type="url"
+            placeholder="https://example.com"
+          >
+
+          <button class="add-btn" onclick="addLink()">
+            Add Link
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script>
+    /*
+      Demo-only access code.
+
+      For a real website, authentication should be handled
+      by a server/authentication service rather than JavaScript.
+    */const PEOPLE_CODE = "people";
+const ADMIN_CODE = "admin123";
+
+
+
+    let links = [
+      {
+        title: "Example Website",
+        url: "https://example.com"
+      }
+    ];
+
+
+  function login() {
+  const input = document.getElementById("accessInput");
+  const error = document.getElementById("loginError");
+  const adminPanel = document.getElementById("adminPanel");
+
+  const code = input.value.trim();
+
+  if (code === PEOPLE_CODE) {
+
+    document.getElementById("loginScreen")
+      .classList.add("hidden");
+
+    document.getElementById("dashboard")
+      .classList.remove("hidden");
+
+    adminPanel.classList.add("hidden");
+    error.classList.add("hidden");
+
+    renderLinks();
+
+  } else if (code === ADMIN_CODE) {
+
+    document.getElementById("loginScreen")
+      .classList.add("hidden");
+
+    document.getElementById("dashboard")
+      .classList.remove("hidden");
+
+    adminPanel.classList.remove("hidden");
+    error.classList.add("hidden");
+
+    renderLinks();
+
+  } else {
+
+    error.classList.remove("hidden");
+  }
+}
+
+
+    function logout() {
+      document.getElementById("dashboard")
+        .classList.add("hidden");
+
+      document.getElementById("loginScreen")
+        .classList.remove("hidden");
+
+      document.getElementById("accessInput").value = "";
+    }
+
+
+    function renderLinks() {
+
+      const container = document.getElementById("links");
+      const count = document.getElementById("linkCount");
+
+      container.innerHTML = "";
+
+      links.forEach(link => {
+
+        const card = document.createElement("div");
+        card.className = "link-card";
+
+        card.innerHTML = `
+          <div class="link-info">
+            <div class="link-title">
+              ${escapeHTML(link.title)}
+            </div>
+
+            <div class="link-url">
+              ${escapeHTML(link.url)}
+            </div>
+          </div>
+
+          <a
+            class="launch"
+            href="${escapeAttribute(link.url)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open
+          </a>
+        `;
+
+        container.appendChild(card);
+      });
+
+      count.textContent =
+        `${links.length} ${links.length === 1 ? "link" : "links"}`;
+    }
+
+
+    function addLink() {
+
+      const input = document.getElementById("urlInput");
+      const url = input.value.trim();
+
+      if (!url) return;
+
+      try {
+        const parsed = new URL(url);
+
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          alert("Please enter an HTTP or HTTPS website.");
+          return;
+        }
+
+        links.push({
+          title: parsed.hostname,
+          url: parsed.href
+        });
+
+        input.value = "";
+
+        renderLinks();
+
+      } catch {
+        alert("Please enter a valid website URL.");
+      }
+    }
+
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+
+    function escapeAttribute(value) {
+      return escapeHTML(value);
+    }
+
+
+    // Press Enter to log in
+    document
+      .getElementById("accessInput")
+      .addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          login();
+        }
+      });
+  </script>
+
+</body>
+</html>
