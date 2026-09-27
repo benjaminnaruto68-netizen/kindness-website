@@ -370,17 +370,31 @@
         Welcome to your personal link dashboard.
       </p>
 
-      <input
-        id="accessInput"
-        type="password"
-        placeholder="Enter access code"
-        autocomplete="off"
-      >
+    <input
+  id="accessEmail"
+  type="email"
+  placeholder="Enter admin email"
+  autocomplete="username"
+>
+
+<input
+  id="accessPassword"
+  type="password"
+  placeholder="Enter password"
+  autocomplete="current-password"
+  style="margin-top: 10px;"
+>
+      
 
       <button class="primary-btn" onclick="login()">
         Enter Dashboard
       </button>
-
+<button
+  class="primary-btn"
+  onclick="viewLinks()"
+>
+  View Links
+</button>
       <div id="loginError" class="error hidden">
         Incorrect access code.
       </div>
@@ -454,171 +468,163 @@
   </main>
 
 
-  <script>
-    /*
-      Demo-only access code.
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-      For a real website, authentication should be handled
-      by a server/authentication service rather than JavaScript.
-    */const PEOPLE_CODE = "people";
-const ADMIN_CODE = "admin123";
+<script>
+const SUPABASE_URL = "https://tykyfivfhxwtostafboc.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VNPDb6-mXGf2pkxBFIK6Vw_RrlIyBL6";
 
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
+async function login() {
+  const email = document.getElementById("accessEmail").value.trim();
+  const password = document.getElementById("accessPassword").value;
 
-    let links = [
-      {
-        title: "Example Website",
-        url: "https://example.com"
-      }
-    ];
-
-
-  function login() {
-  const input = document.getElementById("accessInput");
   const error = document.getElementById("loginError");
   const adminPanel = document.getElementById("adminPanel");
 
-  const code = input.value.trim();
-
-  if (code === PEOPLE_CODE) {
-
-    document.getElementById("loginScreen")
-      .classList.add("hidden");
-
-    document.getElementById("dashboard")
-      .classList.remove("hidden");
-
-    adminPanel.classList.add("hidden");
-    error.classList.add("hidden");
-
-    renderLinks();
-
-  } else if (code === ADMIN_CODE) {
-
-    document.getElementById("loginScreen")
-      .classList.add("hidden");
-
-    document.getElementById("dashboard")
-      .classList.remove("hidden");
-
-    adminPanel.classList.remove("hidden");
-    error.classList.add("hidden");
-
-    renderLinks();
-
-  } else {
-
+  if (!email || !password) {
+    error.textContent = "Enter your email and password.";
     error.classList.remove("hidden");
+    return;
+  }
+
+  const { error: loginError } =
+    await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+  if (loginError) {
+    console.error("Login error:", loginError);
+    error.textContent = loginError.message;
+    error.classList.remove("hidden");
+    return;
+  }
+
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  adminPanel.classList.remove("hidden");
+  error.classList.add("hidden");
+
+  await loadLinks();
+}
+ async function viewLinks() {
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  document.getElementById("adminPanel").classList.add("hidden");
+
+  await loadLinks();
+}
+function logout() {
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("accessInput").value = "";
+}
+
+async function loadLinks() {
+  const { data, error } = await supabaseClient
+    .from("links")
+    .select("*")
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    alert("Could not load the links from Supabase.");
+    return;
+  }
+
+  links = data || [];
+  renderLinks();
+}
+
+function renderLinks() {
+  const container = document.getElementById("links");
+  const count = document.getElementById("linkCount");
+
+  container.innerHTML = "";
+
+  links.forEach(link => {
+    const card = document.createElement("div");
+    card.className = "link-card";
+
+    card.innerHTML = `
+      <div class="link-info">
+        <div class="link-title">${escapeHTML(link.title)}</div>
+        <div class="link-url">${escapeHTML(link.url)}</div>
+      </div>
+
+      <a
+        class="launch"
+        href="${escapeHTML(link.url)}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open
+      </a>
+    `;
+
+    container.appendChild(card);
+  });
+
+  count.textContent =
+    `${links.length} ${links.length === 1 ? "link" : "links"}`;
+}
+
+async function addLink() {
+  const input = document.getElementById("urlInput");
+  let url = input.value.trim();
+
+  if (!url) return;
+
+  if (!/^https?:\/\//i.test(url)) {
+    url = "https://" + url;
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    const { error } = await supabaseClient
+      .from("links")
+      .insert({
+        title: parsed.hostname,
+        url: parsed.href
+      });
+
+    if (error) {
+      console.error(error);
+      alert("Could not save the link.");
+      return;
+    }
+
+    input.value = "";
+    await loadLinks();
+
+  } catch {
+    alert("Please enter a valid website URL.");
   }
 }
 
+function escapeHTML(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-    function logout() {
-      document.getElementById("dashboard")
-        .classList.add("hidden");
-
-      document.getElementById("loginScreen")
-        .classList.remove("hidden");
-
-      document.getElementById("accessInput").value = "";
-    }
-
-
-    function renderLinks() {
-
-      const container = document.getElementById("links");
-      const count = document.getElementById("linkCount");
-
-      container.innerHTML = "";
-
-      links.forEach(link => {
-
-        const card = document.createElement("div");
-        card.className = "link-card";
-
-        card.innerHTML = `
-          <div class="link-info">
-            <div class="link-title">
-              ${escapeHTML(link.title)}
-            </div>
-
-            <div class="link-url">
-              ${escapeHTML(link.url)}
-            </div>
-          </div>
-
-          <a
-            class="launch"
-            href="${escapeAttribute(link.url)}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open
-          </a>
-        `;
-
-        container.appendChild(card);
-      });
-
-      count.textContent =
-        `${links.length} ${links.length === 1 ? "link" : "links"}`;
-    }
-
-
-    function addLink() {
-
-      const input = document.getElementById("urlInput");
-      const url = input.value.trim();
-
-      if (!url) return;
-
-      try {
-        const parsed = new URL(url);
-
-        if (!["http:", "https:"].includes(parsed.protocol)) {
-          alert("Please enter an HTTP or HTTPS website.");
-          return;
-        }
-
-        links.push({
-          title: parsed.hostname,
-          url: parsed.href
-        });
-
-        input.value = "";
-
-        renderLinks();
-
-      } catch {
-        alert("Please enter a valid website URL.");
-      }
-    }
-
-
-    function escapeHTML(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-
-    function escapeAttribute(value) {
-      return escapeHTML(value);
-    }
-
-
-    // Press Enter to log in
-    document
-      .getElementById("accessInput")
-      .addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          login();
-        }
-      });
-  </script>
+document.getElementById("accessInput").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    login();
+  }
+});
+</script>
 
 </body>
-</html>
+</html>c
