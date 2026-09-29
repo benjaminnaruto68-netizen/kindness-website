@@ -369,24 +369,14 @@
       <p class="subtitle">
         Welcome to your personal link dashboard.
       </p>
-
-    <input
-  id="accessEmail"
-  type="email"
-  placeholder="Enter admin email"
-  autocomplete="username"
->
-
 <input
   id="accessPassword"
   type="password"
-  placeholder="Enter password"
+  placeholder="Enter admin password"
   autocomplete="current-password"
-  style="margin-top: 10px;"
 >
-      
-
-      <button class="primary-btn" onclick="login()">
+        
+        <button class="primary-btn" onclick="login()">
         Enter Dashboard
       </button>
 <button
@@ -480,27 +470,27 @@ const supabaseClient = window.supabase.createClient(
 );
 
 async function login() {
-  const email = document.getElementById("accessEmail").value.trim();
   const password = document.getElementById("accessPassword").value;
-
   const error = document.getElementById("loginError");
   const adminPanel = document.getElementById("adminPanel");
 
-  if (!email || !password) {
-    error.textContent = "Enter your email and password.";
+  const ADMIN_EMAIL = "benjaminnaruto68@gmail.com";
+
+  if (!password) {
+    error.textContent = "Enter the admin password.";
     error.classList.remove("hidden");
     return;
   }
 
   const { error: loginError } =
     await supabaseClient.auth.signInWithPassword({
-      email: email,
+      email: ADMIN_EMAIL,
       password: password
     });
 
   if (loginError) {
     console.error("Login error:", loginError);
-    error.textContent = loginError.message;
+    error.textContent = "Incorrect password.";
     error.classList.remove("hidden");
     return;
   }
