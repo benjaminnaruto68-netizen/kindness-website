@@ -317,7 +317,20 @@
     .add-btn:hover {
       background: #374151;
     }
+.delete-btn {
+  margin-left: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 16px;
+  font-weight: 800;
+}
 
+.delete-btn:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
     @media (max-width: 600px) {
       body {
         padding: 14px;
@@ -544,20 +557,32 @@ function renderLinks() {
     card.className = "link-card";
 
     card.innerHTML = `
-      <div class="link-info">
-        <div class="link-title">${escapeHTML(link.title)}</div>
-        <div class="link-url">${escapeHTML(link.url)}</div>
-      </div>
+  <div class="link-info">
+    <div class="link-title">${escapeHTML(link.title)}</div>
+    <div class="link-url">${escapeHTML(link.url)}</div>
+  </div>
 
-      <a
-        class="launch"
-        href="${escapeHTML(link.url)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Open
-      </a>
-    `;
+  <div>
+    <a
+      class="launch"
+      href="${escapeHTML(link.url)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Open
+    </a>
+
+    ${
+      !document.getElementById("adminPanel").classList.contains("hidden")
+        ? `<button
+             class="delete-btn"
+             onclick="deleteLink(${link.id})"
+             title="Delete link"
+           >✕</button>`
+        : ""
+    }
+  </div>
+`;
 
     container.appendChild(card);
   });
@@ -599,7 +624,24 @@ async function addLink() {
     alert("Please enter a valid website URL.");
   }
 }
+async function deleteLink(id) {
+  const confirmed = confirm("Delete this link?");
 
+  if (!confirmed) return;
+
+  const { error } = await supabaseClient
+    .from("links")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Could not delete link:", error);
+    alert("Could not delete the link.");
+    return;
+  }
+
+  await loadLinks();
+}
 function escapeHTML(value) {
   return String(value)
     .replaceAll("&", "&amp;")
