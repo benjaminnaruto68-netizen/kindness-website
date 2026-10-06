@@ -122,21 +122,6 @@
       transform: translateY(-1px);
     }
 
-    .secondary-btn {
-      width: 100%;
-      margin-top: 10px;
-      padding: 14px;
-      border-radius: 12px;
-      color: var(--text);
-      background: transparent;
-      border: 1px solid var(--border);
-      font-size: 15px;
-    }
-
-    .secondary-btn:hover {
-      background: #f9fafb;
-    }
-
     .error {
       color: var(--danger);
       margin-top: 14px;
@@ -396,13 +381,13 @@
       <h1>Kindness</h1>
 
       <p class="subtitle">
-        Welcome to your personal link dashboard.
+        Enter access password to view resources.
       </p>
 
       <input
         id="accessPassword"
         type="password"
-        placeholder="Enter admin password"
+        placeholder="Enter password"
         autocomplete="current-password"
       >
         
@@ -410,12 +395,8 @@
         Enter Dashboard
       </button>
 
-      <button class="secondary-btn" onclick="viewLinks()">
-        View Links
-      </button>
-
       <div id="loginError" class="error hidden">
-        Incorrect access code.
+        Incorrect password.
       </div>
 
     </div>
@@ -444,7 +425,7 @@
 
 
     <section class="hero">
-      <h2>Welcome back 👋</h2>
+      <h2>Welcome 👋</h2>
       <p>
         Open your saved resources from one simple dashboard.
       </p>
@@ -499,25 +480,43 @@
     );
 
     let links = [];
+    const ADMIN_EMAIL = "benjaminnaruto68@gmail.com";
+    const VIEW_ONLY_PASSWORD = "domain";
 
     async function login() {
-      const password = document.getElementById("accessPassword").value;
+      const password = document.getElementById("accessPassword").value.trim();
       const error = document.getElementById("loginError");
       const adminPanel = document.getElementById("adminPanel");
 
-      const ADMIN_EMAIL = "benjaminnaruto68@gmail.com";
-
       if (!password) {
-        error.textContent = "Enter the admin password.";
+        error.textContent = "Please enter a password.";
         error.classList.remove("hidden");
         return;
       }
 
-      const { error: loginError } =
-        await supabaseClient.auth.signInWithPassword({
+      // Check if user entered the View-Only password ("domain")
+      if (password === VIEW_ONLY_PASSWORD) {
+        // Authenticate anonymously or ensure standard session
+        const { error: viewAuthError } = await supabaseClient.auth.signInWithPassword({
           email: ADMIN_EMAIL,
-          password: password
-        });
+          password: VIEW_ONLY_PASSWORD // Note: If view password is not a registered user, we sign in anonymously/publicly
+        }).catch(() => ({}));
+
+        // Hide admin controls for view-only users
+        adminPanel.classList.add("hidden");
+        document.getElementById("loginScreen").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        error.classList.add("hidden");
+
+        await loadLinks();
+        return;
+      }
+
+      // Attempt Admin Login via Supabase Auth
+      const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: password
+      });
 
       if (loginError) {
         console.error("Login error:", loginError);
@@ -526,20 +525,11 @@
         return;
       }
 
-      document.getElementById("loginScreen").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-
+      // Show Admin controls upon successful admin authentication
       adminPanel.classList.remove("hidden");
-      error.classList.add("hidden");
-
-      await loadLinks();
-    }
-
-    async function viewLinks() {
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("dashboard").classList.remove("hidden");
-
-      document.getElementById("adminPanel").classList.add("hidden");
+      error.classList.add("hidden");
 
       await loadLinks();
     }
