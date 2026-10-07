@@ -268,14 +268,13 @@
 
       container.innerHTML = links.map(link => {
         const title = escapeHtml(link.title || link.url);
-        const rawUrl = link.url;
-        const formattedUrl = escapeHtml(/^(https?:\/\/|\/)/i.test(rawUrl) ? rawUrl : 'https://' + rawUrl);
+        const url = escapeHtml(link.url);
 
         return `
           <div class="link-card">
             <div class="link-title">${title}</div>
             <div class="link-actions">
-              <a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="action-btn launch-btn">Open ↗</a>
+              <a href="${url}" target="_blank" rel="noopener noreferrer" class="action-btn launch-btn">Open ↗</a>
               ${currentRole === 'admin' ? `
                 <button onclick="openEditModal(${link.id}, '${title.replace(/'/g, "\\'")}')" class="action-btn edit-btn">✎ Edit</button>
                 <button onclick="openDeleteModal(${link.id}, '${title.replace(/'/g, "\\'")}')" class="action-btn delete-btn">🗑️ Delete</button>
@@ -291,12 +290,19 @@
       const urlInput = document.getElementById("urlInput");
       const titleInput = document.getElementById("titleInput");
 
-      let url = urlInput.value.trim();
+      let rawUrl = urlInput.value.trim();
       let title = titleInput.value.trim();
 
-      if (!url) return;
+      if (!rawUrl) return;
+
+      // Ensure protocol is attached before sending to database
+      let url = rawUrl;
+      if (!/^(https?:\/\/|\/)/i.test(url)) {
+        url = "https://" + url;
+      }
+
       if (!title) {
-        title = url;
+        title = rawUrl;
       }
 
       const { error } = await client.from("links").insert([{ url, title }]);
@@ -306,7 +312,7 @@
         titleInput.value = "";
         loadLinks();
       } else {
-        alert("Failed to add link.");
+        alert("Failed to add link: " + error.message);
       }
     }
 
@@ -332,7 +338,7 @@
         closeEditModal();
         loadLinks();
       } else {
-        alert("Failed to edit link name.");
+        alert("Failed to edit link name: " + error.message);
       }
     }
 
@@ -356,7 +362,7 @@
         closeDeleteModal();
         loadLinks();
       } else {
-        alert("Failed to delete link.");
+        alert("Failed to delete link: " + error.message);
       }
     }
 
