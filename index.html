@@ -295,7 +295,6 @@
 
       if (!rawUrl) return;
 
-      // Ensure protocol is attached before sending to database
       let url = rawUrl;
       if (!/^(https?:\/\/|\/)/i.test(url)) {
         url = "https://" + url;
@@ -312,7 +311,7 @@
         titleInput.value = "";
         loadLinks();
       } else {
-        alert("Failed to add link: " + error.message);
+        alert("Failed to add link: " + JSON.stringify(error));
       }
     }
 
@@ -338,7 +337,7 @@
         closeEditModal();
         loadLinks();
       } else {
-        alert("Failed to edit link name: " + error.message);
+        alert("Failed to edit link name: " + JSON.stringify(error));
       }
     }
 
@@ -362,7 +361,7 @@
         closeDeleteModal();
         loadLinks();
       } else {
-        alert("Failed to delete link: " + error.message);
+        alert("Failed to delete link: " + JSON.stringify(error));
       }
     }
 
