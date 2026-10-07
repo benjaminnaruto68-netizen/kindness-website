@@ -162,7 +162,7 @@
       <form id="addLinkForm" onsubmit="handleAddLink(event)" class="add-form">
         <input type="text" id="titleInput" placeholder="Link Name / Title (Optional)" style="margin-bottom:0;" />
         <div class="add-form-row">
-          <input type="url" id="urlInput" placeholder="https://example.com" style="margin-bottom:0;" required />
+          <input type="text" id="urlInput" placeholder="Enter URL or link target..." style="margin-bottom:0;" required />
           <button type="submit" class="primary-btn" style="margin-top:0; width:auto; padding: 14px 24px;">Add Link</button>
         </div>
       </form>
@@ -268,13 +268,14 @@
 
       container.innerHTML = links.map(link => {
         const title = escapeHtml(link.title || link.url);
-        const url = escapeHtml(link.url);
+        const rawUrl = link.url;
+        const formattedUrl = escapeHtml(/^(https?:\/\/|\/)/i.test(rawUrl) ? rawUrl : 'https://' + rawUrl);
 
         return `
           <div class="link-card">
             <div class="link-title">${title}</div>
             <div class="link-actions">
-              <a href="${url}" target="_blank" rel="noopener noreferrer" class="action-btn launch-btn">Open ↗</a>
+              <a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="action-btn launch-btn">Open ↗</a>
               ${currentRole === 'admin' ? `
                 <button onclick="openEditModal(${link.id}, '${title.replace(/'/g, "\\'")}')" class="action-btn edit-btn">✎ Edit</button>
                 <button onclick="openDeleteModal(${link.id}, '${title.replace(/'/g, "\\'")}')" class="action-btn delete-btn">🗑️ Delete</button>
@@ -294,10 +295,8 @@
       let title = titleInput.value.trim();
 
       if (!url) return;
-      if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-
       if (!title) {
-        try { title = new URL(url).hostname; } catch { title = url; }
+        title = url;
       }
 
       const { error } = await client.from("links").insert([{ url, title }]);
