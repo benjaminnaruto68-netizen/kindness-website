@@ -284,6 +284,26 @@
       border-color: #fca5a5;
     }
 
+    .rename-btn {
+      flex-shrink: 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid transparent;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .rename-btn:hover {
+      background: #eef2ff;
+      color: var(--primary-dark);
+      border-color: #c7d2fe;
+    }
+
     .link-info {
       min-width: 0;
       flex: 1;
@@ -696,12 +716,16 @@
                      class="delete-btn"
                      onclick="openDeleteModal(${link.id}, '${escapeHTML(link.title)}')"
                      title="Delete this link"
-                   >✕</button>`
+                   >✕</button>
+                   <button
+                     class="rename-btn"
+                     onclick="renameLink(${link.id}, '${escapeHTML(link.title)}')"
+                     title="Rename this link"
+                   >✎</button>`
                 : ""
             }
             <div class="link-info">
               <div class="link-title">${escapeHTML(link.title)}</div>
-              <div class="link-url">${escapeHTML(link.url)}</div>
             </div>
           </div>
 
@@ -754,6 +778,32 @@
       } catch {
         alert("Please enter a valid website URL.");
       }
+    }
+
+    async function renameLink(id, currentTitle) {
+      const newTitle = prompt("Enter a new name for this link:", currentTitle);
+
+      if (newTitle === null) return;
+
+      const title = newTitle.trim();
+
+      if (!title) {
+        alert("Please enter a name.");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("links")
+        .update({ title: title })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Could not rename link:", error);
+        alert("Could not rename the link.");
+        return;
+      }
+
+      await loadLinks();
     }
 
     function openDeleteModal(id, title) {
